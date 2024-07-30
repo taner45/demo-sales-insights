@@ -49,13 +49,18 @@ def preprocess(initial_data, holiday, level):
     return final_data, date
 
 def train_arima(train_data):
-    model = auto_arima(train_data['Total'],
-                       start_p=1, start_q=1,
-                       max_p=5, max_q=5,
-                       start_P=0, seasonal=False,
-                       d=1, D=1, trace=True,
-                       error_action='ignore',  
-                       suppress_warnings=True)
+    model = auto_arima(train_data["Total"], 
+                      m=12,               # frequency of series                      
+                      seasonal=True,  # TRUE if seasonal series
+                      d=None,             # let model determine 'd'
+                      test='adf',         # use adftest to find optimal 'd'
+                      start_p=0, start_q=0, # minimum p and q
+                      max_p=3, max_q=3, # maximum p and q
+                      D=None,             # let model determine 'D'
+                      trace=True,
+                      error_action='ignore',  
+                      suppress_warnings=True, 
+                      stepwise=True)
     model.fit(train_data['Total'])
     return model
 

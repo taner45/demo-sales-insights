@@ -23,7 +23,7 @@ from taipy.config import Config, Scope
 import datetime as dt
 
 
-#Config.configure_job_executions(mode="standalone", nb_of_workers=2)
+Config.configure_job_executions(mode="standalone", nb_of_workers=2)
 
 path_to_data = "data/modified_supermarkt_sales_plus.csv"
 
@@ -32,7 +32,7 @@ initial_data_cfg = Config.configure_data_node(id="initial_data",
                                               path=path_to_data,
                                               scope=Scope.GLOBAL)
 
-holiday_cfg = Config.configure_data_node(id="holiday", storage_type="csv")
+holiday_cfg = Config.configure_data_node(id="holiday", storage_type="csv", default_data={"Alice":[0, 1],"Bob":[1,0],"Charlie":[0,0],"Diana":[0,0],"Ethan":[1,0]})
 level_cfg = Config.configure_data_node(id="level", default_data=1)
 date_cfg = Config.configure_data_node(id="date")
 
