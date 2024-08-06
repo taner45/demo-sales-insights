@@ -9,8 +9,15 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-from .root import *
-from .Overview.Overview import *
-from .Analysis.Analysis import *
-from .Predictions.Predictions import *
-from .Admin.Admin import *
+"""
+A page of the application.
+Page content is imported from the Predictions.md file.
+
+Please refer to https://docs.taipy.io/en/latest/manuals/gui/pages for more details.
+"""
+
+from taipy.gui import Markdown
+
+selected_data_node = None
+
+Admin = Markdown("pages/Admin/Admin.md")

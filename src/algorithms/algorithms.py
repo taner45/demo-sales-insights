@@ -21,87 +21,84 @@ import datetime as dt
 import numpy as np
 from pmdarima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
+import logging
 
 
 def add_features(data):
-    dates = pd.to_datetime(data["Date"])
-    data["Months"] = (dates.dt.month - 6)/12
-    data["Days"] = (dates.dt.isocalendar().day - 15)/30
-    data["Week"] = (dates.dt.isocalendar().week - 26)/52
-    data["Day of week"] = (dates.dt.dayofweek - 3.5)/7
+    dates = pd.to_datetime(data["Date"]).copy()
+    data.loc[:, "Months"] = (dates.dt.month - 6) / 12
+    data.loc[:, "Days"] = (dates.dt.isocalendar().day - 15) / 30
+    data.loc[:, "Week"] = (dates.dt.isocalendar().week - 26) / 52
+    data.loc[:, "Day of week"] = (dates.dt.dayofweek - 3.5) / 7
     # Number of days after 30 December 2020
-    data["Index"] = (dates - dt.datetime(2020, 12, 30)).dt.days
+    data.loc[:, "Index"] = (dates - dt.datetime(2020, 12, 30)).dt.days
     return data
 
-def preprocess(initial_data, holiday, level):
-    data = initial_data.groupby(['Date'])\
-                       .sum()\
-                       .dropna()\
-                       .reset_index()
 
-    data['Date'] = pd.to_datetime(data['Date'])
-    final_data = data[['Date','Total']]
+def preprocess(initial_data, holiday, level):
+    data = initial_data.groupby(["Date"]).sum().dropna().reset_index()
+
+    data["Date"] = pd.to_datetime(data["Date"])
+    final_data = data[["Date", "Total"]]
     final_data = add_features(final_data)
 
     if holiday is not None:
-        final_data['Total'] *= np.mean(holiday)/level
+        final_data.loc[:, "Total"] *= np.mean(holiday) / level
 
-    date = final_data['Date'].max()
+    date = final_data["Date"].max()
     return final_data, date
 
+
 def train_arima(train_data):
-    if False:
-        model = auto_arima(train_data["Total"], 
-                        m=12,               # frequency of series                      
-                        seasonal=True,  # TRUE if seasonal series
-                        d=None,             # let model determine 'd'
-                        test='adf',         # use adftest to find optimal 'd'
-                        start_p=0, start_q=0, # minimum p and q
-                        max_p=3, max_q=3, # maximum p and q
-                        D=None,             # let model determine 'D'
-                        trace=True,
-                        error_action='ignore',  
-                        suppress_warnings=True, 
-                        stepwise=True)
-        model = model.fit(train_data['Total'])
-    else:
-        model = SARIMAX(train_data["Total"], order=(3, 0, 0), seasonal_order=(2, 0, 0, 12))
-        model = model.fit(disp=False)
-    
+    model = SARIMAX(train_data["Total"], order=(3, 0, 0), seasonal_order=(2, 0, 0, 12))
+    logging.info("Model created")
+    model = model.fit(disp=False)
+    logging.info("Model trained")
     return model
+
 
 def forecast(model):
     predictions = model.forecast(steps=60)
     return np.array(predictions)
 
-def train_xgboost(train_data):    
-    y = train_data['Total']
-    X = train_data.drop(['Total','Date'], axis=1)
-    
+
+def train_xgboost(train_data):
+    y = train_data["Total"]
+    X = train_data.drop(["Total", "Date"], axis=1)
+
     model = GradientBoostingRegressor()
-    model.fit(X,y)
+    model.fit(X, y)
     return model
 
+
 def forecast_xgboost(model, date):
-    dates = pd.to_datetime([date + dt.timedelta(days=i)
-                            for i in range(60)])
-    X = add_features(pd.DataFrame({"Date":dates}))
-    X.drop('Date', axis=1, inplace=True)
+    dates = pd.to_datetime([date + dt.timedelta(days=i) for i in range(60)])
+    X = add_features(pd.DataFrame({"Date": dates}))
+    X.drop("Date", axis=1, inplace=True)
     predictions = model.predict(X)
     return predictions
 
-def concat(final_data, predictions_arima, predictions_xgboost):
-    date = final_data['Date'].max()
 
-    def  _convert_predictions(final_data, predictions, date, label='Predictions'):
-        dates = pd.to_datetime([date + dt.timedelta(days=i)
-                                for i in range(len(predictions))])
-        final_data['Date'] = pd.to_datetime(final_data['Date'])
-        final_data = final_data[['Date','Total']]
-        predictions = pd.concat([pd.Series(dates, name="Date"),
-                                 pd.Series(predictions, name=label)], axis=1)
+def concat(final_data, predictions_arima, predictions_xgboost):
+    date = final_data["Date"].max()
+
+    def _convert_predictions(final_data, predictions, date, label="Predictions"):
+        dates = pd.to_datetime(
+            [date + dt.timedelta(days=i) for i in range(len(predictions))]
+        )
+        final_data["Date"] = pd.to_datetime(final_data["Date"])
+        final_data = final_data[["Date", "Total"]]
+        predictions = pd.concat(
+            [pd.Series(dates, name="Date"), pd.Series(predictions, name=label)], axis=1
+        )
         return final_data.merge(predictions, on="Date", how="outer")
 
-    result_arima = _convert_predictions(final_data, predictions_arima, date, label='ARIMA')
-    result_xgboost = _convert_predictions(final_data, predictions_xgboost, date, label='Xgboost')
-    return result_arima.merge(result_xgboost, on=["Date", 'Total'], how="outer").sort_values(by='Date')
+    result_arima = _convert_predictions(
+        final_data, predictions_arima, date, label="ARIMA"
+    )
+    result_xgboost = _convert_predictions(
+        final_data, predictions_xgboost, date, label="Xgboost"
+    )
+    return result_arima.merge(
+        result_xgboost, on=["Date", "Total"], how="outer"
+    ).sort_values(by="Date")

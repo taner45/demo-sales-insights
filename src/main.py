@@ -10,21 +10,21 @@
 # specific language governing permissions and limitations under the License.
 import taipy as tp
 from taipy.gui import Gui
-
-from configuration import scenario_cfg
+from algorithms import *
 from taipy import Core
 
-if __name__ == "__main__":
-    from pages import *
 
+if __name__ == "__main__":
+    from configuration import Config
+    from pages import *
 
     pages = {
         "/": root_page,
         "Overview": Overview,
         "Analysis": Analysis,
-        "Predictions": Predictions
+        "Predictions": Predictions,
+        "Admin": Admin,
     }
-
 
     core = Core()
     core.run()
@@ -39,5 +39,4 @@ if __name__ == "__main__":
     # #############################################################################
 
     gui = Gui(pages=pages)
-    gui.run(title="Sales Prediction", port=2452)
-    
+    gui.run(title="Sales Prediction")

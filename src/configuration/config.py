@@ -16,27 +16,32 @@ The configuration is run by the Core service.
 """
 
 from algorithms import *
-
-from taipy import Config
-
-from taipy.config import Config, Scope
-import datetime as dt
+from taipy import Config, Scope
 
 
-Config.configure_job_executions(mode="standalone", nb_of_workers=2)
+# Config.configure_job_executions(mode="standalone", nb_of_workers=2)
 
 path_to_data = "data/modified_supermarkt_sales_plus.csv"
 
-initial_data_cfg = Config.configure_data_node(id="initial_data",
-                                              storage_type="csv",
-                                              path=path_to_data,
-                                              scope=Scope.GLOBAL)
+initial_data_cfg = Config.configure_data_node(
+    id="initial_data", storage_type="csv", path=path_to_data, scope=Scope.GLOBAL
+)
 
-holiday_cfg = Config.configure_data_node(id="holiday", storage_type="csv", default_data={"Alice":[0, 1],"Bob":[1,0],"Charlie":[0,0],"Diana":[0,0],"Ethan":[1,0]})
+holiday_cfg = Config.configure_data_node(
+    id="holiday",
+    storage_type="csv",
+    default_data={
+        "Alice": [0, 1],
+        "Bob": [1, 0],
+        "Charlie": [0, 0],
+        "Diana": [0, 0],
+        "Ethan": [1, 0],
+    },
+)
 level_cfg = Config.configure_data_node(id="level", default_data=1)
 date_cfg = Config.configure_data_node(id="date")
 
-final_data_cfg =  Config.configure_data_node(id="final_data")
+final_data_cfg = Config.configure_data_node(id="final_data")
 
 model_arima_cfg = Config.configure_data_node(id="model_arima")
 model_xgboost_cfg = Config.configure_data_node(id="model_xgboost")
@@ -47,46 +52,58 @@ predictions_xgboost_cfg = Config.configure_data_node(id="predictions_xgboost")
 result_cfg = Config.configure_data_node(id="result")
 
 
-task_preprocess_cfg = Config.configure_task(id="task_preprocess_data",
-                                            function=preprocess,
-                                            input=[initial_data_cfg, holiday_cfg, level_cfg],
-                                            output=[final_data_cfg, date_cfg])
+task_preprocess_cfg = Config.configure_task(
+    id="task_preprocess_data",
+    function=preprocess,
+    input=[initial_data_cfg, holiday_cfg, level_cfg],
+    output=[final_data_cfg, date_cfg],
+)
 
 
-task_train_arima_cfg = Config.configure_task(id="task_train",
-                                             function=train_arima,
-                                             input=final_data_cfg,
-                                             output=model_arima_cfg) 
+task_train_arima_cfg = Config.configure_task(
+    id="task_train", function=train_arima, input=final_data_cfg, output=model_arima_cfg
+)
 
-task_forecast_arima_cfg = Config.configure_task(id="task_forecast",
-                                                function=forecast,
-                                                input=model_arima_cfg,
-                                                output=predictions_arima_cfg)
-
-
-task_train_xgboost_cfg = Config.configure_task(id="task_train_xgboost",
-                                               function=train_xgboost,
-                                               input=final_data_cfg,
-                                               output=model_xgboost_cfg)
-
-task_forecast_xgboost_cfg = Config.configure_task(id="task_forecast_xgboost",
-                                                  function=forecast_xgboost,
-                                                  input=[model_xgboost_cfg, date_cfg],
-                                                  output=predictions_xgboost_cfg)
-
-task_result_cfg = Config.configure_task(id="task_result",
-                                        function=concat,
-                                        input=[final_data_cfg, 
-                                               predictions_arima_cfg, 
-                                               predictions_xgboost_cfg],
-                                        output=result_cfg)
+task_forecast_arima_cfg = Config.configure_task(
+    id="task_forecast",
+    function=forecast,
+    input=model_arima_cfg,
+    output=predictions_arima_cfg,
+)
 
 
-scenario_cfg = Config.configure_scenario(id='scenario', task_configs=[task_preprocess_cfg,
-                                                                      task_train_arima_cfg,
-                                                                      task_forecast_arima_cfg,
-                                                                      task_train_xgboost_cfg,
-                                                                      task_forecast_xgboost_cfg,
-                                                                      task_result_cfg])
+task_train_xgboost_cfg = Config.configure_task(
+    id="task_train_xgboost",
+    function=train_xgboost,
+    input=final_data_cfg,
+    output=model_xgboost_cfg,
+)
 
-Config.export('configuration/config.toml')
+task_forecast_xgboost_cfg = Config.configure_task(
+    id="task_forecast_xgboost",
+    function=forecast_xgboost,
+    input=[model_xgboost_cfg, date_cfg],
+    output=predictions_xgboost_cfg,
+)
+
+task_result_cfg = Config.configure_task(
+    id="task_result",
+    function=concat,
+    input=[final_data_cfg, predictions_arima_cfg, predictions_xgboost_cfg],
+    output=result_cfg,
+)
+
+
+scenario_cfg = Config.configure_scenario(
+    id="scenario",
+    task_configs=[
+        task_preprocess_cfg,
+        task_train_arima_cfg,
+        task_forecast_arima_cfg,
+        task_train_xgboost_cfg,
+        task_forecast_xgboost_cfg,
+        task_result_cfg,
+    ],
+)
+
+Config.export("configuration/config.toml")

@@ -1,9 +1,5 @@
 [TAIPY]
 
-[JOB]
-mode = "standalone"
-nb_of_workers = "2:int"
-
 [DATA_NODE.initial_data]
 storage_type = "csv"
 scope = "GLOBAL:SCOPE"
