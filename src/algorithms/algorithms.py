@@ -20,6 +20,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 import datetime as dt
 import numpy as np
 from pmdarima import auto_arima
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 
 def add_features(data):
@@ -49,23 +50,28 @@ def preprocess(initial_data, holiday, level):
     return final_data, date
 
 def train_arima(train_data):
-    model = auto_arima(train_data["Total"], 
-                      m=12,               # frequency of series                      
-                      seasonal=True,  # TRUE if seasonal series
-                      d=None,             # let model determine 'd'
-                      test='adf',         # use adftest to find optimal 'd'
-                      start_p=0, start_q=0, # minimum p and q
-                      max_p=3, max_q=3, # maximum p and q
-                      D=None,             # let model determine 'D'
-                      trace=True,
-                      error_action='ignore',  
-                      suppress_warnings=True, 
-                      stepwise=True)
-    model.fit(train_data['Total'])
+    if False:
+        model = auto_arima(train_data["Total"], 
+                        m=12,               # frequency of series                      
+                        seasonal=True,  # TRUE if seasonal series
+                        d=None,             # let model determine 'd'
+                        test='adf',         # use adftest to find optimal 'd'
+                        start_p=0, start_q=0, # minimum p and q
+                        max_p=3, max_q=3, # maximum p and q
+                        D=None,             # let model determine 'D'
+                        trace=True,
+                        error_action='ignore',  
+                        suppress_warnings=True, 
+                        stepwise=True)
+        model = model.fit(train_data['Total'])
+    else:
+        model = SARIMAX(train_data["Total"], order=(3, 0, 0), seasonal_order=(2, 0, 0, 12))
+        model = model.fit(disp=False)
+    
     return model
 
 def forecast(model):
-    predictions = model.predict(n_periods=60)
+    predictions = model.forecast(steps=60)
     return np.array(predictions)
 
 def train_xgboost(train_data):    

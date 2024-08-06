@@ -12,20 +12,20 @@ import taipy as tp
 from taipy.gui import Gui
 
 from configuration import scenario_cfg
-
 from taipy import Core
-from pages import *
-
-
-pages = {
-    "/": root_page,
-    "Overview": Overview,
-	"Analysis": Analysis,
-	"Predictions": Predictions
-}
-
 
 if __name__ == "__main__":
+    from pages import *
+
+
+    pages = {
+        "/": root_page,
+        "Overview": Overview,
+        "Analysis": Analysis,
+        "Predictions": Predictions
+    }
+
+
     core = Core()
     core.run()
     # #############################################################################

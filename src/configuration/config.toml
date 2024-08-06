@@ -1,5 +1,9 @@
 [TAIPY]
 
+[JOB]
+mode = "standalone"
+nb_of_workers = "2:int"
+
 [DATA_NODE.initial_data]
 storage_type = "csv"
 scope = "GLOBAL:SCOPE"
@@ -64,6 +68,13 @@ skippable = "False:bool"
 [SCENARIO.scenario]
 tasks = [ "task_preprocess_data:SECTION", "task_train:SECTION", "task_forecast:SECTION", "task_train_xgboost:SECTION", "task_forecast_xgboost:SECTION", "task_result:SECTION",]
 additional_data_nodes = []
+
+[DATA_NODE.holiday.default_data]
+Alice = [ "0:int", "1:int",]
+Bob = [ "1:int", "0:int",]
+Charlie = [ "0:int", "0:int",]
+Diana = [ "0:int", "0:int",]
+Ethan = [ "1:int", "0:int",]
 
 [SCENARIO.scenario.comparators]
 
