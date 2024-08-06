@@ -19,7 +19,7 @@ from algorithms import *
 from taipy import Config, Scope
 
 
-# Config.configure_job_executions(mode="standalone", nb_of_workers=2)
+Config.configure_job_executions(mode="standalone", nb_of_workers=2)
 
 path_to_data = "data/modified_supermarkt_sales_plus.csv"
 

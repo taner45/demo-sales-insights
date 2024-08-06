@@ -25,13 +25,13 @@ import logging
 
 
 def add_features(data):
-    dates = pd.to_datetime(data["Date"]).copy()
-    data.loc[:, "Months"] = (dates.dt.month - 6) / 12
-    data.loc[:, "Days"] = (dates.dt.isocalendar().day - 15) / 30
-    data.loc[:, "Week"] = (dates.dt.isocalendar().week - 26) / 52
-    data.loc[:, "Day of week"] = (dates.dt.dayofweek - 3.5) / 7
+    dates = pd.to_datetime(data["Date"])
+    data["Months"] = (dates.dt.month - 6) / 12
+    data["Days"] = (dates.dt.isocalendar().day - 15) / 30
+    data["Week"] = (dates.dt.isocalendar().week - 26) / 52
+    data["Day of week"] = (dates.dt.dayofweek - 3.5) / 7
     # Number of days after 30 December 2020
-    data.loc[:, "Index"] = (dates - dt.datetime(2020, 12, 30)).dt.days
+    data["Index"] = (dates - dt.datetime(2020, 12, 30)).dt.days
     return data
 
 
@@ -43,7 +43,7 @@ def preprocess(initial_data, holiday, level):
     final_data = add_features(final_data)
 
     if holiday is not None:
-        final_data.loc[:, "Total"] *= np.mean(holiday) / level
+        final_data["Total"] *= np.mean(holiday) / level
 
     date = final_data["Date"].max()
     return final_data, date
@@ -51,9 +51,9 @@ def preprocess(initial_data, holiday, level):
 
 def train_arima(train_data):
     model = SARIMAX(train_data["Total"], order=(3, 0, 0), seasonal_order=(2, 0, 0, 12))
-    logging.info("Model created")
+    print("Model created")
     model = model.fit(disp=False)
-    logging.info("Model trained")
+    print("Model trained")
     return model
 
 

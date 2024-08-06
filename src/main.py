@@ -13,6 +13,7 @@ from taipy.gui import Gui
 from algorithms import *
 from taipy import Core
 
+pd.options.mode.chained_assignment = None
 
 if __name__ == "__main__":
     from configuration import Config
