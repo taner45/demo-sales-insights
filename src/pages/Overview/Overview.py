@@ -72,7 +72,7 @@ with tgb.Page() as Overview:
     # Sales by City Map
     tgb.chart(figure="{create_sales_by_city_map(data)}", height="600px")
 
-    with tgb.layout(columns="1 1 1"):
+    with tgb.layout(columns="1 1 1", columns__mobile="1"):
         tgb.chart(figure="{fig_product_line}")
         tgb.chart(figure="{fig_city}")
         tgb.chart(figure="{fig_customer_type}")

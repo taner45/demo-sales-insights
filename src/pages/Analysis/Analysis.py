@@ -72,7 +72,7 @@ city = ["Bangkok", "Chiang Mai", "Vientiane", "Luang Prabang"]
 
 
 with tgb.Page() as Analysis:
-    with tgb.layout(columns="1 1 1"):
+    with tgb.layout(columns="1 1 1", columns__mobile="1"):
         tgb.selector(
             value="{customer_type}",
             lov=customer_type,
@@ -98,7 +98,7 @@ with tgb.Page() as Analysis:
             label="City",
         )
 
-    with tgb.layout(columns="1 1"):
+    with tgb.layout(columns="1 1", columns__mobile="1"):
         tgb.chart(figure="{fig_customer_type}")
         tgb.chart(figure="{fig_city}")
         tgb.chart(figure="{fig_gender}")

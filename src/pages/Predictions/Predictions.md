@@ -1,4 +1,4 @@
-<|layout|columns=2 9|gap=50px|
+<|layout|columns=2 9|columns[mobile]=1|gap=50px|class_name=align_columns_center|
 <sidebar|sidebar|
 Create and select **scenarios**
 

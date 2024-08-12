@@ -14,3 +14,10 @@ src - Copy
 src_single_page_taipy_tech_talk - Copy
 
 *.tar.gz
+src_enterprise/.env
+src_enterprise/compose.yml
+src_enterprise/configuration/config.py
+src_enterprise/configuration/config.toml
+src_enterprise/Dockerfile
+src_enterprise/pages/Predictions/Predictions.md
+src_enterprise/requirements.txt
